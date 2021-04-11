@@ -1,16 +1,38 @@
-# Crisp_Takehome
+# Crisp - Back End Take Home Test
 
-Using Pandas over CSV due to potentially large data sets
+## How to Install
 
-I will use SQLAlchemy over SQLite for better portability to a real relational database if need be in the future.
+`pip3 install philcsv`
 
-For larger CSV files with hundreds of thousands of rows, we may want to consider splitting up the reading of the file
-into separate same-sized chunks.
+## Dependencies
 
-# How to use library:
-from philcsv import csvwrangler
+Pandas
+Flask
+SQLAlchemy
 
-orders = csvwrangler.wrangle( "csvfile" )
+## How to use code
+Add the following import to your python code
+`from philcsv import csvwrangler`
 
-for order in orders:
-   print (order)
+Call the wrangle function as follows with input .csv file:
+`orders = csvwrangler.wrangle( "csvfile" )`
+
+The function will return a list of OrderModel class objects (function definition can be found in `csvwrangler.py`.
+
+OrderModel class definition:
+```
+class OrderModel(db.Model):
+    OrderID = db.Column(db.Integer, primary_key=True)
+    OrderDate = db.Column(db.DateTime, nullable=False)
+    ProductId = db.Column(db.String(25), nullable=False)
+    ProductName = db.Column(db.String(100), nullable=False)
+    Quantity = db.Column(db.Numeric, nullable=False)
+    Unit = db.Column(db.String(10), nullable=False)
+
+    def __repr__(self):
+        return f"{self.OrderID} | {self.OrderDate} | {self.ProductId} | {self.ProductName} | {self.Quantity} | {self.Unit}"
+```
+
+## Architectural overview
+
+## Next steps
