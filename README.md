@@ -10,7 +10,7 @@
 Pandas, Flask, SQLAlchemy
 
 ## How to use code
-Add the following import to your python code
+Add the following import to your python code  
 `from philcsv import csvwrangler`
 
 Call the wrangle function as follows with input .csv file:
