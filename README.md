@@ -9,6 +9,10 @@
 
 Pandas, Flask, SQLAlchemy
 
+## How to run test cases
+
+`python3 setup.py pytest`
+
 ## How to use code
 Add the following import to your Python code  
 `from philcsv import csvwrangler`
