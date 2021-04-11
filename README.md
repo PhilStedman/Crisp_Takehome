@@ -1,8 +1,8 @@
 # Crisp - Back End Take Home Test
 
 ## How to Install
-
-`pip3 install philcsv`
+`python3 setup.py bdist_wheel`
+`pip3 install /path/to/wheelfile.whl`
 
 ## Dependencies
 
