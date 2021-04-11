@@ -1,0 +1,9 @@
+tests/.vscode
+tests/__pycache__/
+philcsv/__pycache__/
+*.egg-info/
+dist/
+build/
+.vscode
+venv/
+.eggs/

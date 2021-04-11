@@ -1,0 +1,8 @@
+Order Number,Year,Month,Day,Product Number,Product Name,Count,Extra Col1,Extra Col2
+1a00,2018,1,1,P-10001,Arugola,"5,250.50",Lorem,Ipsum
+1001,2017,13,12,P-10002,Iceberg lettuce,500.00,Lorem,Ipsum
+1000,2018,1,41,P-10001,Arugola,"5,250.50",Lorem,Ipsum
+1000,0,1,1,P-10001,Arugola,"5,250.50",Lorem,Ipsum
+1000,2018,1,1,P-10001,Arugola,"5a,250.50",Lorem,Ipsum
+1000,2020,6,27,P-9001,chocolate,"5.25",Bueno,Kinder
+1001,2019,12,12,P-10002,bagel,"15.00",Blueberry,(&@&$
