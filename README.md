@@ -7,9 +7,7 @@
 
 ## Dependencies
 
-Pandas
-Flask
-SQLAlchemy
+Pandas, Flask, SQLAlchemy
 
 ## How to use code
 Add the following import to your python code
