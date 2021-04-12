@@ -2,15 +2,16 @@
 
 ## How to Install
 ```
-python3 setup.py bdist_wheel
-pip3 install dist/*.whl
+pip install wheel
+python setup.py bdist_wheel
+pip install dist/*.whl
 ```
 
 ### Dependencies
 Pandas module
 
 ## How to run test cases
-`python3 setup.py pytest`
+`python setup.py pytest`
 
 ## How to use code
 Import the library as follows:    
