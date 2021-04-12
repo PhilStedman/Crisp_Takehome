@@ -38,7 +38,7 @@ def wrangle( csvFile, cfgFile = None ):
                 unit_value = config["order"]["unit"]
 
             if "quantity" in config["order"]:
-                qty_value = config["order"]["quantity"]
+                qty_value = config["order"]["quantity"].lower()
                 if qty_value == "int" or qty_value == "integer":
                     qty_as_int = True
 

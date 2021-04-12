@@ -6,12 +6,10 @@ python3 setup.py bdist_wheel
 pip3 install dist/*.whl
 ```
 
-## Dependencies
-
+### Dependencies
 Pandas module
 
 ## How to run test cases
-
 `python3 setup.py pytest`
 
 ## How to use code
@@ -44,6 +42,14 @@ When run, the above program outputs the following:
 ```
 
 ### Configuration file criteria
+The external configuration file allows a user to change the default **Unit** value from its default value of "kg" to some other value. It also allows to change the **Quantity** value from its default *BigDecimal* type to an *Integer* type. This can be achieved by specifying a quantity value of either "int" or "integer" (case insensitive).
+
+Sample config.ini file:
+```
+[order]
+unit = lbs
+quantity = Integer
+```
 
 ## Architectural overview
 
