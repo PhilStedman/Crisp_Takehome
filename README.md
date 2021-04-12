@@ -11,7 +11,7 @@ pip install dist/*.whl
 Pandas module
 
 ## How to run test cases
-`python setup.py pytest`
+`pytest -v`
 
 ## How to use code
 Import the library as follows:    
