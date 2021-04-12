@@ -6,10 +6,8 @@ def test_samplecsv():
     file = Path(__file__).parent / "testcsvs/sample.csv"
     orders = csvwrangler.wrangle( file )
 
-    expected = [ csvwrangler.OrderModel( OrderID = 1000, OrderDate = datetime.datetime(2018,1,1), ProductId = "P-10001",
-                                         ProductName = "Arugola", Quantity = 5250.50, Unit = "kg" ),
-                 csvwrangler.OrderModel( OrderID = 1001, OrderDate = datetime.datetime(2017,12,12), ProductId = "P-10002",
-                                         ProductName = "Iceberg Lettuce", Quantity = 500.00, Unit = "kg" )  ]
+    expected = [ csvwrangler.Order( 1000, datetime.datetime(2018,1,1), "P-10001", "Arugola", 5250.50, "kg" ),
+                 csvwrangler.Order( 1001, datetime.datetime(2017,12,12), "P-10002", "Iceberg Lettuce", 500.00, "kg" ) ]
 
     i = 0
     for order in orders:
@@ -25,10 +23,8 @@ def test_errorcsv():
     file = Path(__file__).parent / "testcsvs/erroneous.csv"
     orders = csvwrangler.wrangle( file )
 
-    expected = [ csvwrangler.OrderModel( OrderID = 1000, OrderDate = datetime.datetime(2020,6,27), ProductId = "P-9001",
-                                         ProductName = "Chocolate", Quantity = 5.25, Unit = "kg" ),
-                 csvwrangler.OrderModel( OrderID = 1001, OrderDate = datetime.datetime(2019,12,12), ProductId = "P-10002",
-                                         ProductName = "Bagel", Quantity = 15, Unit = "kg" )  ]
+    expected = [ csvwrangler.Order( 1000, datetime.datetime(2020,6,27), "P-9001", "Chocolate", 5.25, "kg" ),
+                 csvwrangler.Order( 1001, datetime.datetime(2019,12,12), "P-10002", "Bagel", 15, "kg" ) ]
 
     i = 0
     for order in orders:

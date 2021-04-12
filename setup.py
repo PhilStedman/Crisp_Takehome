@@ -7,7 +7,7 @@ setup(
     description='Crisp Take Home Library',
     author='Phil Stedman',
     license='GPL',
-    install_requires=['Flask','pandas','SQLAlchemy'],
+    install_requires=['pandas'],
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
     test_suite='tests',

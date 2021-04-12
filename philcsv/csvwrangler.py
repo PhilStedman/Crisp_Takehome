@@ -1,24 +1,21 @@
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
 import pandas as pd
-import logging
 import philcsv.csvhelper as csvhelper
+import logging
 
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
-db = SQLAlchemy(app)
+class Order:
 
-class OrderModel(db.Model):
-    OrderID = db.Column(db.Integer, primary_key=True)
-    OrderDate = db.Column(db.DateTime, nullable=False)
-    ProductId = db.Column(db.String(25), nullable=False)
-    ProductName = db.Column(db.String(100), nullable=False)
-    Quantity = db.Column(db.Numeric, nullable=False)
-    Unit = db.Column(db.String(10), nullable=False)
+    def __init__(self, order_id, order_date, product_id, product_name, quantity, unit):
+        self.OrderID = order_id
+        self.OrderDate = order_date
+        self.ProductId = product_id
+        self.ProductName = product_name
+        self.Quantity = quantity
+        self.Unit = unit
 
     def __repr__(self):
         return f"{self.OrderID} | {self.OrderDate} | {self.ProductId} | {self.ProductName} | {self.Quantity} | {self.Unit}"
 
+# Main wrangling function
 def wrangle( csvFile ):
 
     # Read the .csv file
@@ -50,12 +47,8 @@ def wrangle( csvFile ):
             continue
 
         # Convert to OrderModel database object
-        order_list.append ( OrderModel( OrderID = order_id,
-                                        OrderDate = order_date,
-                                        ProductId = df["Product Number"][i],
-                                        ProductName = df["Product Name"][i].title(),
-                                        Quantity = quantity,
-                                        Unit = 'kg' ) )
+        order_list.append ( Order( order_id, order_date, df["Product Number"][i],
+                                   df["Product Name"][i].title(), quantity, 'kg' ) )
 
-    # Return order list, ready to be stored in SQLAlchemy database
+    # Return order list
     return order_list
