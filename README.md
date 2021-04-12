@@ -51,6 +51,12 @@ unit = lbs
 quantity = Integer
 ```
 
-## Architectural overview
+## Architectural decisions
+The input .csv file is being read using the pandas read_csv() function. This was chosen because we could easily improve upon the design by reading in large .csv files using the chunksize parameter. The current design does not handle very large .csv files (100,000+ rows) because we attempt to read the entire file in one go. For very large input .csv files, this will cause the system to crash due to 'Out Of Memory' errors. These issues can be resolved by reading in the .csv file in separate chunks. 
+
+Due to the ambiguity of what should be done with the output data, the API returns the data as a list of Order class objects. Most likely, the API would need to be extended to store the output data in a database.
 
 ## Next steps
+- For large .csv files, split up the reading of the file into manageable chunks.
+- Determine where the output data should be stored and extend the API to store the output data in the database of your choosing.
+- Gather information on what other configurations are necessary and extend the configuration file capabilities to support those.
