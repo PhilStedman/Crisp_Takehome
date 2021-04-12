@@ -1,40 +1,48 @@
 # Crisp - Back End Take Home Test
 
 ## How to Install
-`python3 setup.py bdist_wheel`
-
-`pip3 install dist/*.whl`
+```
+python3 setup.py bdist_wheel
+pip3 install dist/*.whl
+```
 
 ## Dependencies
 
-Pandas, Flask, SQLAlchemy
+Pandas module
 
 ## How to run test cases
 
 `python3 setup.py pytest`
 
 ## How to use code
-Add the following import to your Python code  
+Import the library as follows:    
 `from philcsv import csvwrangler`
 
-Call the wrangle function as follows with input .csv file:  
-`orders = csvwrangler.wrangle( "csvfile" )`
-
-The function will return a list of OrderModel class objects (function definition can be found in `csvwrangler.py`.
-
-OrderModel class definition:  
+Call the wrangle function with input .csv file and optional .ini configuration file:  
 ```
-class OrderModel(db.Model):
-    OrderID = db.Column(db.Integer, primary_key=True)
-    OrderDate = db.Column(db.DateTime, nullable=False)
-    ProductId = db.Column(db.String(25), nullable=False)
-    ProductName = db.Column(db.String(100), nullable=False)
-    Quantity = db.Column(db.Numeric, nullable=False)
-    Unit = db.Column(db.String(10), nullable=False)
-
-    def __repr__(self):
-        return f"{self.OrderID} | {self.OrderDate} | {self.ProductId} | {self.ProductName} | {self.Quantity} | {self.Unit}"
+orders = csvwrangler.wrangle( "groceryOrders.csv" )
+orders = csvwrangler.wrangle( "groceryOrders.csv", "config.ini" )
 ```
+
+The function will return a list of Order class objects (as defined in csvwrangler.py). Take the following 
+python program as an example which uses the [orders.csv](https://gist.githubusercontent.com/daggerrz/99e766b4660e3c0ed26517beaea6449a/raw/e2d3a3e42ad1895baa430612f921bc87cfff651c/orders.csv) file as input:  
+*test.py*
+```
+from philcsv import csvwrangler
+
+orders = csvwrangler.wrangle("orders.csv")
+
+for order in orders:
+    print(order)
+```
+
+When run, the above program outputs the following:
+```
+1000 | 2018-01-01 00:00:00 | P-10001 | Arugola | 5250.50 | kg
+1001 | 2017-12-12 00:00:00 | P-10002 | Iceberg Lettuce | 500.00 | kg
+```
+
+### Configuration file criteria
 
 ## Architectural overview
 
