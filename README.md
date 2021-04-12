@@ -1,25 +1,28 @@
 # Crisp - Back End Take Home Test
 
 ## How to Install
+`python3 setup.py bdist_wheel`
 
-`pip3 install philcsv`
+`pip3 install dist/*.whl`
 
 ## Dependencies
 
-Pandas
-Flask
-SQLAlchemy
+Pandas, Flask, SQLAlchemy
+
+## How to run test cases
+
+`python3 setup.py pytest`
 
 ## How to use code
-Add the following import to your python code
+Add the following import to your Python code  
 `from philcsv import csvwrangler`
 
-Call the wrangle function as follows with input .csv file:
+Call the wrangle function as follows with input .csv file:  
 `orders = csvwrangler.wrangle( "csvfile" )`
 
 The function will return a list of OrderModel class objects (function definition can be found in `csvwrangler.py`.
 
-OrderModel class definition:
+OrderModel class definition:  
 ```
 class OrderModel(db.Model):
     OrderID = db.Column(db.Integer, primary_key=True)
