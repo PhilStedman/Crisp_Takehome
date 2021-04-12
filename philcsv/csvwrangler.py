@@ -1,6 +1,7 @@
 import pandas as pd
 import philcsv.csvhelper as csvhelper
 import logging
+from configparser import ConfigParser
 
 class Order:
 
@@ -16,13 +17,30 @@ class Order:
         return f"{self.OrderID} | {self.OrderDate} | {self.ProductId} | {self.ProductName} | {self.Quantity} | {self.Unit}"
 
 # Main wrangling function
-def wrangle( csvFile ):
+def wrangle( csvFile, cfgFile = None ):
 
     # Read the .csv file
     df = pd.read_csv( csvFile,
                       error_bad_lines=False,
                       usecols=["Order Number", "Year", "Month", "Day", "Product Number", "Product Name", "Count"],
                       dtype={ 'Order Number': str, 'Year': str, 'Month': str, 'Day': str, 'Product Number': str, 'Product Name': str, 'Count': str } )
+
+    # Defaults
+    unit_value = "kg"
+    qty_as_int = False
+
+    # Process configuration file if provided
+    if cfgFile is not None:
+        config = ConfigParser()
+        config.read(cfgFile)
+        if "order" in config:
+            if "unit" in config["order"]:
+                unit_value = config["order"]["unit"]
+
+            if "quantity" in config["order"]:
+                qty_value = config["order"]["quantity"]
+                if qty_value == "int" or qty_value == "integer":
+                    qty_as_int = True
 
     order_list = []
 
@@ -46,9 +64,13 @@ def wrangle( csvFile ):
             logging.warning( df.iloc[[i]] )
             continue
 
-        # Convert to OrderModel database object
+        # Convert quantity to integer if specified in config
+        if qty_as_int:
+            quantity=int(quantity)
+
+        # Convert to Order class object to list
         order_list.append ( Order( order_id, order_date, df["Product Number"][i],
-                                   df["Product Name"][i].title(), quantity, 'kg' ) )
+                                   df["Product Name"][i].title(), quantity, unit_value ) )
 
     # Return order list
     return order_list
