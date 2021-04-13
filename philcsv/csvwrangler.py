@@ -1,86 +1,89 @@
 import pandas as pd
-import philcsv.csvhelper as csvhelper
 import logging
+import datetime
 from configparser import ConfigParser
+from decimal import Decimal
+
+# Constants
+ORDER_NUMBER = "Order Number"
+YEAR = "Year"
+MONTH = "Month"
+DAY = "Day"
+PRODUCT_NUMBER = "Product Number"
+PRODUCT_NAME = "Product Name"
+COUNT = "Count"
 
 
+# Class definition for Order object returned by API
 class Order:
     def __init__(self, order_id, order_date, product_id, product_name, quantity, unit):
-        self.OrderID = order_id
-        self.OrderDate = order_date
-        self.ProductId = product_id
-        self.ProductName = product_name
-        self.Quantity = quantity
-        self.Unit = unit
+        self.order_id = order_id
+        self.order_date = order_date
+        self.product_id = product_id
+        self.product_name = product_name
+        self.quantity = quantity
+        self.unit = unit
 
     def __repr__(self):
-        return f"{self.OrderID} | {self.OrderDate} | {self.ProductId} | {self.ProductName} | {self.Quantity} | {self.Unit}"
+        return f"{self.order_id} | {self.order_date} | {self.product_id} | \
+                 {self.product_name} | {self.quantity} | {self.unit}"
 
 
-# Main wrangling function
-def wrangle(csvFile, cfgFile=None):
+# Main wrangle API function
+def wrangle(csv_file, cfg_file=None):
 
     # Read the .csv file
     df = pd.read_csv(
-        csvFile,
+        csv_file,
         error_bad_lines=False,
         usecols=[
-            "Order Number",
-            "Year",
-            "Month",
-            "Day",
-            "Product Number",
-            "Product Name",
-            "Count",
+            ORDER_NUMBER,
+            YEAR,
+            MONTH,
+            DAY,
+            PRODUCT_NUMBER,
+            PRODUCT_NAME,
+            COUNT,
         ],
         dtype={
-            "Order Number": str,
-            "Year": str,
-            "Month": str,
-            "Day": str,
-            "Product Number": str,
-            "Product Name": str,
-            "Count": str,
+            ORDER_NUMBER: str,
+            YEAR: str,
+            MONTH: str,
+            DAY: str,
+            PRODUCT_NUMBER: str,
+            PRODUCT_NAME: str,
+            COUNT: str,
         },
     )
 
-    # Defaults
+    # Config default values
     unit_value = "kg"
     qty_as_int = False
 
     # Process configuration file if provided
-    if cfgFile is not None:
-        config = ConfigParser()
-        config.read(cfgFile)
-        if "order" in config:
-            if "unit" in config["order"]:
-                unit_value = config["order"]["unit"]
-
-            if "quantity" in config["order"]:
-                qty_value = config["order"]["quantity"].lower()
-                if qty_value == "int" or qty_value == "integer":
-                    qty_as_int = True
+    if cfg_file is not None:
+        result = _parse_config_file(cfg_file)
+        unit_value = result[0]
+        qty_as_int = result[1]
 
     order_list = []
 
     # Loop through rows
     for i in range(len(df)):
         # Process Order Number
-        order_id = csvhelper.processOrderNumber(df["Order Number"][i])
+        order_id = _process_order_number(df[ORDER_NUMBER][i])
         if order_id == -1:
             logging.warning(df.iloc[[i]])
             continue
 
         # Process Year, Month, Day
-        order_date = csvhelper.processOrderDate(
-            df["Year"][i], df["Month"][i], df["Day"][i]
-        )
+        order_date = _process_order_date(df[YEAR][i], df[MONTH][i], df[DAY][i])
         if order_date == -1:
             logging.warning(df.iloc[[i]])
             continue
 
         # Process Count
-        quantity = csvhelper.processCount(df["Count"][i])
+        quantity = _process_count(df[COUNT][i])
         if quantity == -1:
             logging.warning(df.iloc[[i]])
             continue
@@ -94,8 +97,8 @@ def wrangle(csvFile, cfgFile=None):
             Order(
                 order_id,
                 order_date,
-                df["Product Number"][i],
-                df["Product Name"][i].title(),
+                df[PRODUCT_NUMBER][i],
+                df[PRODUCT_NAME][i].title(),
                 quantity,
                 unit_value,
             )
@@ -103,3 +106,63 @@ def wrangle(csvFile, cfgFile=None):
 
     # Return order list
     return order_list
+
+
+# Configuration file parser
+def _parse_config_file(cfg_file):
+    config = ConfigParser()
+    config.read(cfg_file)
+    if "order" in config:
+        if "unit" in config["order"]:
+            unit_value = config["order"]["unit"]
+
+        if "quantity" in config["order"]:
+            qty_value = config["order"]["quantity"].lower()
+            if qty_value == "int" or qty_value == "integer":
+                qty_as_int = True
+
+    return unit_value, qty_as_int
+
+
+# Helper functions to process CSV column values
+def _process_order_number(order_no):
+    if order_no.isdigit():
+        return int(order_no)
+    else:
+        logging.warning("Invalid row entry: 'Order Number' must be a positive integer.")
+        return -1
+
+
+def _process_order_date(year, month, day):
+    if year.isdigit() is False or int(year) < 1:
+        logging.warning("Invalid row entry: 'Year' value is not valid")
+        return -1
+
+    if month.isdigit() is False or int(month) < 1 or int(month) > 12:
+        logging.warning("Invalid row entry: 'Month' value is not valid")
+        return -1
+
+    if day.isdigit() is False or int(day) < 1 or int(day) > 31:
+        logging.warning("Invalid row entry: 'Day' value is not valid")
+        return -1
+
+    order_date = datetime.datetime(int(year), int(month), int(day))
+    return order_date
+
+
+def _process_count(qty):
+    qty = qty.replace(",", "")
+
+    try:
+        float(qty)
+    except ValueError:
+        logging.warning("Invalid row entry: 'Count' is non-numeric.")
+        return -1
+
+    qty = Decimal(qty)
+
+    if qty < 0:
+        logging.warning("Invalid row entry: 'Count' has a negative value.")
+        return -1
+
+    return qty
