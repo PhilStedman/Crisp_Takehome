@@ -73,18 +73,21 @@ def wrangle(csv_file, cfg_file=None):
         # Process Order Number
         order_id = _process_order_number(df[ORDER_NUMBER][i])
         if order_id == -1:
+            # Log invalid row
             logging.warning(df.iloc[[i]])
             continue
 
         # Process Year, Month, Day
         order_date = _process_order_date(df[YEAR][i], df[MONTH][i], df[DAY][i])
         if order_date == -1:
+            # Log invalid row
             logging.warning(df.iloc[[i]])
             continue
 
         # Process Count
         quantity = _process_count(df[COUNT][i])
         if quantity == -1:
+            # Log invalid row
             logging.warning(df.iloc[[i]])
             continue
 
