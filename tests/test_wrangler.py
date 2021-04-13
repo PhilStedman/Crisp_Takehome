@@ -1,79 +1,46 @@
 from philcsv import wrangler
+from philcsv.wrangler import Order
 from pathlib import Path
 import datetime
 
 
-def test_samplecsv():
-    file = Path(__file__).parent / "resources/sample.csv"
-    orders = wrangler.wrangle(file)
+def test_wrangle():
 
-    expected = [
-        wrangler.Order(1000, datetime.datetime(2018, 1, 1), "P-10001", "Arugola", 5250.50, "kg"),
-        wrangler.Order(
-            1001,
-            datetime.datetime(2017, 12, 12),
-            "P-10002",
-            "Iceberg Lettuce",
-            500.00,
-            "kg",
-        ),
+    test_cases = [
+        {
+            "name": "Happy path (Sample CSV)",
+            "csv_file_path": "resources/sample.csv",
+            "cfg_file_path": "",
+            "expected": [
+                Order(1000, datetime.datetime(2018, 1, 1), "P-10001", "Arugola", 5250.50, "kg"),
+                Order(1001, datetime.datetime(2017, 12, 12), "P-10002", "Iceberg Lettuce", 500.00, "kg"),
+            ],
+        },
+        {
+            "name": "Happy path (Sample CSV with config)",
+            "csv_file_path": "resources/sample.csv",
+            "cfg_file_path": "resources/config1.ini",
+            "expected": [
+                Order(1000, datetime.datetime(2018, 1, 1), "P-10001", "Arugola", 5250, "lbs"),
+                Order(1001, datetime.datetime(2017, 12, 12), "P-10002", "Iceberg Lettuce", 500, "lbs"),
+            ],
+        },
+        {
+            "name": "Bad CSV",
+            "csv_file_path": "resources/erroneous.csv",
+            "cfg_file_path": "",
+            "expected": [
+                Order(1000, datetime.datetime(2020, 6, 27), "P-9001", "Chocolate", 5.25, "kg"),
+                Order(1001, datetime.datetime(2019, 12, 12), "P-10002", "Bagel", 15, "kg"),
+            ],
+        },
     ]
 
-    i = 0
-    for order in orders:
-        assert order.order_id == expected[i].order_id
-        assert order.order_date == expected[i].order_date
-        assert order.product_id == expected[i].product_id
-        assert order.product_name == expected[i].product_name
-        assert order.quantity == expected[i].quantity
-        assert order.unit == expected[i].unit
-        i += 1
+    for test_case in test_cases:
+        csv_file = Path(__file__).parent / test_case["csv_file_path"]
+        cfg_file = ""
+        if test_case["cfg_file_path"]:
+            cfg_file = Path(__file__).parent / test_case["cfg_file_path"]
 
-
-def test_samplecsv_withcfg():
-    file = Path(__file__).parent / "resources/sample.csv"
-    cfg_file = Path(__file__).parent / "resources/config1.ini"
-
-    orders = wrangler.wrangle(file, cfg_file)
-
-    expected = [
-        wrangler.Order(1000, datetime.datetime(2018, 1, 1), "P-10001", "Arugola", 5250, "lbs"),
-        wrangler.Order(
-            1001,
-            datetime.datetime(2017, 12, 12),
-            "P-10002",
-            "Iceberg Lettuce",
-            500,
-            "lbs",
-        ),
-    ]
-
-    i = 0
-    for order in orders:
-        assert order.order_id == expected[i].order_id
-        assert order.order_date == expected[i].order_date
-        assert order.product_id == expected[i].product_id
-        assert order.product_name == expected[i].product_name
-        assert order.quantity == expected[i].quantity
-        assert order.unit == expected[i].unit
-        i += 1
-
-
-def test_errorcsv():
-    file = Path(__file__).parent / "resources/erroneous.csv"
-    orders = wrangler.wrangle(file)
-
-    expected = [
-        wrangler.Order(1000, datetime.datetime(2020, 6, 27), "P-9001", "Chocolate", 5.25, "kg"),
-        wrangler.Order(1001, datetime.datetime(2019, 12, 12), "P-10002", "Bagel", 15, "kg"),
-    ]
-
-    i = 0
-    for order in orders:
-        assert order.order_id == expected[i].order_id
-        assert order.order_date == expected[i].order_date
-        assert order.product_id == expected[i].product_id
-        assert order.product_name == expected[i].product_name
-        assert order.quantity == expected[i].quantity
-        assert order.unit == expected[i].unit
-        i += 1
+        # Ensure the result matches the expected result
+        assert test_case["expected"] == wrangler.wrangle(csv_file, cfg_file), test_case["name"]

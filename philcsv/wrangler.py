@@ -16,7 +16,9 @@ COUNT = "Count"
 
 # Class definition for Order object returned by API
 class Order:
-    def __init__(self, order_id, order_date, product_id, product_name, quantity, unit):
+    def __init__(
+        self, order_id: int, order_date: datetime.datetime, product_id: str, product_name: str, quantity, unit: str
+    ):
         self.order_id = order_id
         self.order_date = order_date
         self.product_id = product_id
@@ -24,13 +26,26 @@ class Order:
         self.quantity = quantity
         self.unit = unit
 
+    def __eq__(self, other):
+        if not isinstance(other, Order):
+            return NotImplemented
+
+        return (
+            self.order_id == other.order_id
+            and self.order_date == other.order_date
+            and self.product_id == other.product_id
+            and self.product_name == other.product_name
+            and self.quantity == other.quantity
+            and self.unit == other.unit
+        )
+
     def __repr__(self):
         return f"{self.order_id} | {self.order_date} | {self.product_id} | \
                  {self.product_name} | {self.quantity} | {self.unit}"
 
 
 # Main wrangle API function
-def wrangle(csv_file, cfg_file=None):
+def wrangle(csv_file, cfg_file="") -> list:
 
     # Read the .csv file
     df = pd.read_csv(
@@ -61,7 +76,7 @@ def wrangle(csv_file, cfg_file=None):
     qty_as_int = False
 
     # Process configuration file if provided
-    if cfg_file is not None:
+    if cfg_file:
         result = _parse_config_file(cfg_file)
         unit_value = result[0]
         qty_as_int = result[1]
@@ -112,7 +127,7 @@ def wrangle(csv_file, cfg_file=None):
 
 
 # Configuration file parser
-def _parse_config_file(cfg_file):
+def _parse_config_file(cfg_file: str) -> tuple:
     config = ConfigParser()
     config.read(cfg_file)
     if "order" in config:
@@ -128,7 +143,7 @@ def _parse_config_file(cfg_file):
 
 
 # Helper functions to process CSV column values
-def _process_order_number(order_no):
+def _process_order_number(order_no) -> int:
     if order_no.isdigit():
         return int(order_no)
     else:
@@ -136,7 +151,7 @@ def _process_order_number(order_no):
         return -1
 
 
-def _process_order_date(year, month, day):
+def _process_order_date(year: str, month: str, day: str):
     if year.isdigit() is False or int(year) < 1:
         logging.warning("Invalid row entry: 'Year' value is not valid")
         return -1
