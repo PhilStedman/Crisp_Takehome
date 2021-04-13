@@ -14,17 +14,17 @@ Pandas module
 `pytest -v`
 
 ## How to use code
-Import the library as follows:    
+Import the library as follows:
 `from philcsv import csvwrangler`
 
-Call the wrangle function with input .csv file and optional .ini configuration file:  
+Call the wrangle function with input .csv file and optional .ini configuration file:
 ```
 orders = csvwrangler.wrangle( "groceryOrders.csv" )
 orders = csvwrangler.wrangle( "groceryOrders.csv", "config.ini" )
 ```
 
-The function will return a list of Order class objects (as defined in csvwrangler.py). Take the following 
-python program as an example which uses the [orders.csv](https://gist.githubusercontent.com/daggerrz/99e766b4660e3c0ed26517beaea6449a/raw/e2d3a3e42ad1895baa430612f921bc87cfff651c/orders.csv) file as input:   
+The function will return a list of Order class objects (as defined in csvwrangler.py). Take the following
+python program as an example which uses the [orders.csv](https://gist.githubusercontent.com/daggerrz/99e766b4660e3c0ed26517beaea6449a/raw/e2d3a3e42ad1895baa430612f921bc87cfff651c/orders.csv) file as input:
 
 **test.py**
 ```
@@ -53,7 +53,7 @@ quantity = Integer
 ```
 
 ## Architectural decisions
-The input .csv file is being read using the pandas read_csv() function. This was chosen because we could easily improve upon the design by reading in large .csv files using the chunksize parameter. The current design does not handle very large .csv files (100,000+ rows) because we attempt to read the entire file in one go. For very large input .csv files, this will cause the system to crash due to 'Out Of Memory' errors. These issues can be resolved by reading in the .csv file in separate chunks. 
+The input .csv file is being read using the pandas read_csv() function. This was chosen because we could easily improve upon the design by reading in large .csv files using the chunksize parameter. The current design does not handle very large .csv files (100,000+ rows) because we attempt to read the entire file in one go. For very large input .csv files, this will cause the system to crash due to 'Out Of Memory' errors. These issues can be resolved by reading in the .csv file in separate chunks.
 
 Due to the ambiguity of what should be done with the output data, the API returns the data as a list of Order class objects. Most likely, the API would need to be extended to store the output data in a database.
 

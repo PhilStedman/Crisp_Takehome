@@ -3,8 +3,8 @@ import philcsv.csvhelper as csvhelper
 import logging
 from configparser import ConfigParser
 
-class Order:
 
+class Order:
     def __init__(self, order_id, order_date, product_id, product_name, quantity, unit):
         self.OrderID = order_id
         self.OrderDate = order_date
@@ -16,14 +16,33 @@ class Order:
     def __repr__(self):
         return f"{self.OrderID} | {self.OrderDate} | {self.ProductId} | {self.ProductName} | {self.Quantity} | {self.Unit}"
 
+
 # Main wrangling function
-def wrangle( csvFile, cfgFile = None ):
+def wrangle(csvFile, cfgFile=None):
 
     # Read the .csv file
-    df = pd.read_csv( csvFile,
-                      error_bad_lines=False,
-                      usecols=["Order Number", "Year", "Month", "Day", "Product Number", "Product Name", "Count"],
-                      dtype={ 'Order Number': str, 'Year': str, 'Month': str, 'Day': str, 'Product Number': str, 'Product Name': str, 'Count': str } )
+    df = pd.read_csv(
+        csvFile,
+        error_bad_lines=False,
+        usecols=[
+            "Order Number",
+            "Year",
+            "Month",
+            "Day",
+            "Product Number",
+            "Product Name",
+            "Count",
+        ],
+        dtype={
+            "Order Number": str,
+            "Year": str,
+            "Month": str,
+            "Day": str,
+            "Product Number": str,
+            "Product Name": str,
+            "Count": str,
+        },
+    )
 
     # Defaults
     unit_value = "kg"
@@ -47,30 +66,40 @@ def wrangle( csvFile, cfgFile = None ):
     # Loop through rows
     for i in range(len(df)):
         # Process Order Number
-        order_id = csvhelper.processOrderNumber( df["Order Number"][i] )
+        order_id = csvhelper.processOrderNumber(df["Order Number"][i])
         if order_id == -1:
-            logging.warning( df.iloc[[i]] )
+            logging.warning(df.iloc[[i]])
             continue
 
         # Process Year, Month, Day
-        order_date = csvhelper.processOrderDate( df["Year"][i], df["Month"][i], df["Day"][i] )
+        order_date = csvhelper.processOrderDate(
+            df["Year"][i], df["Month"][i], df["Day"][i]
+        )
         if order_date == -1:
-            logging.warning( df.iloc[[i]] )
+            logging.warning(df.iloc[[i]])
             continue
 
         # Process Count
-        quantity = csvhelper.processCount( df["Count"][i] )
+        quantity = csvhelper.processCount(df["Count"][i])
         if quantity == -1:
-            logging.warning( df.iloc[[i]] )
+            logging.warning(df.iloc[[i]])
             continue
 
         # Convert quantity to integer if specified in config
         if qty_as_int:
-            quantity=int(quantity)
+            quantity = int(quantity)
 
         # Convert to Order class object to list
-        order_list.append ( Order( order_id, order_date, df["Product Number"][i],
-                                   df["Product Name"][i].title(), quantity, unit_value ) )
+        order_list.append(
+            Order(
+                order_id,
+                order_date,
+                df["Product Number"][i],
+                df["Product Name"][i].title(),
+                quantity,
+                unit_value,
+            )
+        )
 
     # Return order list
     return order_list
