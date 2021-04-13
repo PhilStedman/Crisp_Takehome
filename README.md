@@ -15,22 +15,22 @@ Pandas module
 
 ## How to use code
 Import the library as follows:
-`from philcsv import csvwrangler`
+`from philcsv import wrangler`
 
 Call the wrangle function with input .csv file and optional .ini configuration file:
 ```
-orders = csvwrangler.wrangle( "groceryOrders.csv" )
-orders = csvwrangler.wrangle( "groceryOrders.csv", "config.ini" )
+orders = wrangler.wrangle( "groceryOrders.csv" )
+orders = wrangler.wrangle( "groceryOrders.csv", "config.ini" )
 ```
 
-The function will return a list of Order class objects (as defined in csvwrangler.py). Take the following
+The function will return a list of Order class objects (as defined in wrangler.py). Take the following
 python program as an example which uses the [orders.csv](https://gist.githubusercontent.com/daggerrz/99e766b4660e3c0ed26517beaea6449a/raw/e2d3a3e42ad1895baa430612f921bc87cfff651c/orders.csv) file as input:
 
 **test.py**
 ```
-from philcsv import csvwrangler
+from philcsv import wrangler
 
-orders = csvwrangler.wrangle("orders.csv")
+orders = wrangler.wrangle("orders.csv")
 
 for order in orders:
     print(order)
