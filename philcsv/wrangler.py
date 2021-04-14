@@ -17,7 +17,7 @@ COUNT = "Count"
 # Class definition for Order object returned by API
 class Order:
     def __init__(
-        self, order_id: int, order_date: datetime.datetime, product_id: str, product_name: str, quantity, unit: str
+        self, order_id: int, order_date: datetime.datetime, product_id: str, product_name: str, quantity, unit
     ):
         self.order_id = order_id
         self.order_date = order_date
@@ -72,14 +72,11 @@ def wrangle(csv_file, cfg_file="") -> list:
     )
 
     # Config default values
-    unit_value = "kg"
-    qty_as_int = False
+    cfg_params = {"unit": "kg", "qty_as_int": False}
 
     # Process configuration file if provided
     if cfg_file:
-        result = _parse_config_file(cfg_file)
-        unit_value = result[0]
-        qty_as_int = result[1]
+        _parse_config_file(cfg_file, cfg_params)
 
     order_list = []
 
@@ -107,7 +104,7 @@ def wrangle(csv_file, cfg_file="") -> list:
             continue
 
         # Convert quantity to integer if specified in config
-        if qty_as_int:
+        if cfg_params["qty_as_int"]:
             quantity = int(quantity)
 
         # Convert to Order class object to list
@@ -118,7 +115,7 @@ def wrangle(csv_file, cfg_file="") -> list:
                 df[PRODUCT_NUMBER][i],
                 df[PRODUCT_NAME][i].title(),
                 quantity,
-                unit_value,
+                cfg_params["unit"],
             )
         )
 
@@ -127,19 +124,17 @@ def wrangle(csv_file, cfg_file="") -> list:
 
 
 # Configuration file parser
-def _parse_config_file(cfg_file: str) -> tuple:
+def _parse_config_file(cfg_file: str, cfg_params: dict):
     config = ConfigParser()
     config.read(cfg_file)
     if "order" in config:
         if "unit" in config["order"]:
-            unit_value = config["order"]["unit"]
+            cfg_params["unit"] = config["order"]["unit"]
 
         if "quantity" in config["order"]:
             qty_value = config["order"]["quantity"].lower()
             if qty_value == "int" or qty_value == "integer":
-                qty_as_int = True
-
-    return unit_value, qty_as_int
+                cfg_params["qty_as_int"] = True
 
 
 # Helper functions to process CSV column values
