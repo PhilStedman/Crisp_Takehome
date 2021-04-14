@@ -143,7 +143,7 @@ def _parse_config_file(cfg_file: str) -> tuple:
 
 
 # Helper functions to process CSV column values
-def _process_order_number(order_no) -> int:
+def _process_order_number(order_no: str) -> int:
     if order_no.isdigit():
         return int(order_no)
     else:
@@ -168,7 +168,7 @@ def _process_order_date(year: str, month: str, day: str):
     return order_date
 
 
-def _process_count(qty):
+def _process_count(qty: str):
     qty = qty.replace(",", "")
 
     try:
@@ -177,10 +177,10 @@ def _process_count(qty):
         logging.warning("Invalid row entry: 'Count' is non-numeric.")
         return -1
 
-    qty = Decimal(qty)
+    quantity = Decimal(qty)
 
-    if qty < 0:
+    if quantity < 0:
         logging.warning("Invalid row entry: 'Count' has a negative value.")
         return -1
 
-    return qty
+    return quantity
