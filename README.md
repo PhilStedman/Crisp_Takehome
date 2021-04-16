@@ -43,14 +43,44 @@ When run, the above program outputs the following:
 ```
 
 ### Configuration file criteria
-The external configuration file allows a user to change the **Unit** value from its default value of "kg" to some other value. It also allows to change the **Quantity** value from its default *BigDecimal* type to an *Integer* type. This can be achieved by specifying a quantity value of either "int" or "integer" (case insensitive).
+The external configuration file allows a user to adjust the expected column names in the input CSV file. Take the following configuration file for example:
+config.ini:
+```
+[schema]
+order_id = Order ID
+year = YYYY
+month = MM
+day = DD
+product_id = ProductNo
+product_name = Product Name
+quantity = Qty
+```
 
-Sample config.ini file (order, unit and quantity should all be lower-cased):
+The above configuration specifies that the order_id can be found in the "Order ID" column, the year can be found in the "YYYY" column, etc... The contents of the configuration file are case-sensitive, if any one of the above keys cannot be found, then the program will default to a pre-defined default value. The default values are listed below:
+
 ```
-[order]
-unit = lbs
-quantity = Integer
+order_id = "Order Number"
+year = "Year"
+month = "Month"
+day = "Day"
+product_id = "Product Number"
+product_name =  "Product Name"
+quantity = "Count"
 ```
+
+## Assumptions made
+For this project, I assume we are working with a static target schema, that is we have a database and it has the following schema:
+
+Column name | Type
+--- | ---
+OrderID | Integer
+OrderDate | Date
+ProductId | String
+ProductName | String (proper cased)
+Quantity | BigDecimal
+Unit | String
+
+The goal here is to have a program that can read input CSV files provided by partners which could have varying headers. In order to accomodate varying input CSV files, we provide a config file which can be used to specify where to look for each column value of interest.
 
 ## Architectural decisions
 The input .csv file is being read using the pandas read_csv() function. This was chosen because we could easily improve upon the design by reading in large .csv files using the chunksize parameter. The current design does not handle very large .csv files (100,000+ rows) because we attempt to read the entire file in one go. For very large input .csv files, this will cause the system to crash due to 'Out Of Memory' errors. These issues can be resolved by reading in the .csv file in separate chunks.
@@ -60,4 +90,4 @@ Due to the ambiguity of what should be done with the output data, the API return
 ## Next steps
 - For large .csv files, split up the reading of the file into manageable chunks.
 - Determine where the output data should be stored and extend the API to store the output data in the database of your choosing.
-- Gather information on what other configurations are necessary and extend the configuration file capabilities to support those.
+- Improve the capabilities of the configuration file to be less restrictive on the form of the input CSV file, e.g. a particular partner may be storing the date in a single column called "YYYY-MM-DD". The current design would not be able to handle this case.

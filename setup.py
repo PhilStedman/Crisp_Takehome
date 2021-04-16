@@ -11,6 +11,6 @@ setup(
     description="Crisp Take Home Library",
     long_description=long_description,
     author="Phil Stedman",
-    license="GPL",
+    license="MIT",
     install_requires=["pandas"],
 )

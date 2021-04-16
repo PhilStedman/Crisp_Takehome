@@ -4,20 +4,29 @@ import datetime
 from configparser import ConfigParser
 from decimal import Decimal
 
-# Constants
-ORDER_NUMBER = "Order Number"
-YEAR = "Year"
-MONTH = "Month"
-DAY = "Day"
-PRODUCT_NUMBER = "Product Number"
-PRODUCT_NAME = "Product Name"
-COUNT = "Count"
+# Config file parameters
+ORDER_ID = "order_id"
+YEAR = "year"
+MONTH = "month"
+DAY = "day"
+PRODUCT_ID = "product_id"
+PRODUCT_NAME = "product_name"
+QUANTITY = "quantity"
+
+# Other constants
+SCHEMA = "schema"
 
 
 # Class definition for Order object returned by API
 class Order:
     def __init__(
-        self, order_id: int, order_date: datetime.datetime, product_id: str, product_name: str, quantity, unit
+        self,
+        order_id: int,
+        order_date: datetime.datetime,
+        product_id: str,
+        product_name: str,
+        quantity: Decimal,
+        unit: str,
     ):
         self.order_id = order_id
         self.order_date = order_date
@@ -47,75 +56,79 @@ class Order:
 # Main wrangle API function
 def wrangle(csv_file, cfg_file="") -> list:
 
+    # Config default values
+    cfg_params = {
+        ORDER_ID: "Order Number",
+        YEAR: "Year",
+        MONTH: "Month",
+        DAY: "Day",
+        PRODUCT_ID: "Product Number",
+        PRODUCT_NAME: "Product Name",
+        QUANTITY: "Count",
+    }
+
+    # Process configuration file if provided
+    if cfg_file:
+        _parse_config_file(cfg_file, cfg_params)
+
     # Read the .csv file
     df = pd.read_csv(
         csv_file,
         error_bad_lines=False,
         usecols=[
-            ORDER_NUMBER,
-            YEAR,
-            MONTH,
-            DAY,
-            PRODUCT_NUMBER,
-            PRODUCT_NAME,
-            COUNT,
+            cfg_params[ORDER_ID],
+            cfg_params[YEAR],
+            cfg_params[MONTH],
+            cfg_params[DAY],
+            cfg_params[PRODUCT_ID],
+            cfg_params[PRODUCT_NAME],
+            cfg_params[QUANTITY],
         ],
         dtype={
-            ORDER_NUMBER: str,
-            YEAR: str,
-            MONTH: str,
-            DAY: str,
-            PRODUCT_NUMBER: str,
-            PRODUCT_NAME: str,
-            COUNT: str,
+            cfg_params[ORDER_ID]: str,
+            cfg_params[YEAR]: str,
+            cfg_params[MONTH]: str,
+            cfg_params[DAY]: str,
+            cfg_params[PRODUCT_ID]: str,
+            cfg_params[PRODUCT_NAME]: str,
+            cfg_params[QUANTITY]: str,
         },
     )
-
-    # Config default values
-    cfg_params = {"unit": "kg", "qty_as_int": False}
-
-    # Process configuration file if provided
-    if cfg_file:
-        _parse_config_file(cfg_file, cfg_params)
 
     order_list = []
 
     # Loop through rows
     for i in range(len(df)):
         # Process Order Number
-        order_id = _process_order_number(df[ORDER_NUMBER][i])
+        order_id = _process_order_number(df[cfg_params[ORDER_ID]][i])
         if order_id == -1:
             # Log invalid row
             logging.warning(df.iloc[[i]])
             continue
 
         # Process Year, Month, Day
-        order_date = _process_order_date(df[YEAR][i], df[MONTH][i], df[DAY][i])
+        order_date = _process_order_date(df[cfg_params[YEAR]][i], df[cfg_params[MONTH]][i], df[cfg_params[DAY]][i])
         if order_date == -1:
             # Log invalid row
             logging.warning(df.iloc[[i]])
             continue
 
         # Process Count
-        quantity = _process_count(df[COUNT][i])
+        quantity = _process_count(df[cfg_params[QUANTITY]][i])
         if quantity == -1:
             # Log invalid row
             logging.warning(df.iloc[[i]])
             continue
-
-        # Convert quantity to integer if specified in config
-        if cfg_params["qty_as_int"]:
-            quantity = int(quantity)
 
         # Convert to Order class object to list
         order_list.append(
             Order(
                 order_id,
                 order_date,
-                df[PRODUCT_NUMBER][i],
-                df[PRODUCT_NAME][i].title(),
+                df[cfg_params[PRODUCT_ID]][i],
+                df[cfg_params[PRODUCT_NAME]][i].title(),
                 quantity,
-                cfg_params["unit"],
+                "kg",
             )
         )
 
@@ -127,14 +140,27 @@ def wrangle(csv_file, cfg_file="") -> list:
 def _parse_config_file(cfg_file: str, cfg_params: dict):
     config = ConfigParser()
     config.read(cfg_file)
-    if "order" in config:
-        if "unit" in config["order"]:
-            cfg_params["unit"] = config["order"]["unit"]
+    if SCHEMA in config:
+        if ORDER_ID in config[SCHEMA]:
+            cfg_params[ORDER_ID] = config[SCHEMA][ORDER_ID]
 
-        if "quantity" in config["order"]:
-            qty_value = config["order"]["quantity"].lower()
-            if qty_value == "int" or qty_value == "integer":
-                cfg_params["qty_as_int"] = True
+        if YEAR in config[SCHEMA]:
+            cfg_params[YEAR] = config[SCHEMA][YEAR]
+
+        if MONTH in config[SCHEMA]:
+            cfg_params[MONTH] = config[SCHEMA][MONTH]
+
+        if DAY in config[SCHEMA]:
+            cfg_params[DAY] = config[SCHEMA][DAY]
+
+        if PRODUCT_ID in config[SCHEMA]:
+            cfg_params[PRODUCT_ID] = config[SCHEMA][PRODUCT_ID]
+
+        if PRODUCT_NAME in config[SCHEMA]:
+            cfg_params[PRODUCT_NAME] = config[SCHEMA][PRODUCT_NAME]
+
+        if QUANTITY in config[SCHEMA]:
+            cfg_params[QUANTITY] = config[SCHEMA][QUANTITY]
 
 
 # Helper functions to process CSV column values
@@ -142,7 +168,7 @@ def _process_order_number(order_no: str) -> int:
     if order_no.isdigit():
         return int(order_no)
     else:
-        logging.warning("Invalid row entry: 'Order Number' must be a positive integer.")
+        logging.warning("Invalid row entry: 'OrderID' must be a positive integer.")
         return -1
 
 
@@ -169,13 +195,13 @@ def _process_count(qty: str):
     try:
         float(qty)
     except ValueError:
-        logging.warning("Invalid row entry: 'Count' is non-numeric.")
+        logging.warning("Invalid row entry: 'Quantity' is non-numeric.")
         return -1
 
     quantity = Decimal(qty)
 
     if quantity < 0:
-        logging.warning("Invalid row entry: 'Count' has a negative value.")
+        logging.warning("Invalid row entry: 'Quantity' has a negative value.")
         return -1
 
     return quantity

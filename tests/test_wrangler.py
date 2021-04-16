@@ -8,8 +8,8 @@ def test_wrangle():
 
     test_cases = [
         {
-            "name": "Happy path (Sample CSV)",
-            "csv_file_path": "resources/sample.csv",
+            "name": "Happy path (Default CSV)",
+            "csv_file_path": "resources/default.csv",
             "cfg_file_path": "",
             "expected": [
                 Order(1000, datetime.datetime(2018, 1, 1), "P-10001", "Arugola", 5250.50, "kg"),
@@ -17,12 +17,12 @@ def test_wrangle():
             ],
         },
         {
-            "name": "Happy path (Sample CSV with config)",
-            "csv_file_path": "resources/sample.csv",
+            "name": "Happy path (User defined CSV with config)",
+            "csv_file_path": "resources/user_defined.csv",
             "cfg_file_path": "resources/config1.ini",
             "expected": [
-                Order(1000, datetime.datetime(2018, 1, 1), "P-10001", "Arugola", 5250, "lbs"),
-                Order(1001, datetime.datetime(2017, 12, 12), "P-10002", "Iceberg Lettuce", 500, "lbs"),
+                Order(1000, datetime.datetime(2018, 1, 1), "P-10001", "Arugola", 5250.50, "kg"),
+                Order(1001, datetime.datetime(2017, 12, 12), "P-10002", "Iceberg Lettuce", 500.00, "kg"),
             ],
         },
         {
