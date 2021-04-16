@@ -44,7 +44,8 @@ When run, the above program outputs the following:
 
 ### Configuration file criteria
 The external configuration file allows a user to adjust the expected column names in the input CSV file. Take the following configuration file for example:
-config.ini:
+
+**config.ini**
 ```
 [schema]
 order_id = Order ID
@@ -56,7 +57,7 @@ product_name = Product Name
 quantity = Qty
 ```
 
-The above configuration specifies that the order_id can be found in the "Order ID" column, the year can be found in the "YYYY" column, etc... The contents of the configuration file are case-sensitive, if any one of the above keys cannot be found, then the program will default to a pre-defined default value. The default values are listed below:
+The above configuration specifies that the order_id can be found in the "Order ID" column, the year can be found in the "YYYY" column, etc... The contents of the configuration file are case-sensitive, if any one of the above keys cannot be found, then the program will default to a pre-defined value. The default values are listed below:
 
 ```
 order_id = "Order Number"
@@ -64,7 +65,7 @@ year = "Year"
 month = "Month"
 day = "Day"
 product_id = "Product Number"
-product_name =  "Product Name"
+product_name = "Product Name"
 quantity = "Count"
 ```
 
