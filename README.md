@@ -24,7 +24,7 @@ orders = wrangler.wrangle( "groceryOrders.csv", "config.ini" )
 ```
 
 The function will return a list of Order class objects (as defined in wrangler.py). Take the following
-python program as an example which uses the [orders.csv](https://gist.githubusercontent.com/daggerrz/99e766b4660e3c0ed26517beaea6449a/raw/e2d3a3e42ad1895baa430612f921bc87cfff651c/orders.csv) file as input:
+Python program as an example which uses the [orders.csv](https://gist.githubusercontent.com/daggerrz/99e766b4660e3c0ed26517beaea6449a/raw/e2d3a3e42ad1895baa430612f921bc87cfff651c/orders.csv) file as input:
 
 **test.py**
 ```
