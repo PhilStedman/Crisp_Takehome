@@ -12,10 +12,44 @@ DAY = "day"
 PRODUCT_ID = "product_id"
 PRODUCT_NAME = "product_name"
 QUANTITY = "quantity"
+UNIT = "unit"
 
 # Other constants
 SCHEMA = "schema"
 
+# Config default values
+CFG_DEFAULT = {
+    ORDER_ID: "Order Number",
+    YEAR: "Year",
+    MONTH: "Month",
+    DAY: "Day",
+    PRODUCT_ID: "Product Number",
+    PRODUCT_NAME: "Product Name",
+    QUANTITY: "Count",
+    UNIT: "Unit",
+}
+
+
+def _get_column_name(config, schema, field):
+    return config[schema][field] if field in config[schema] else CFG_DEFAULT[field]
+
+
+# Configuration file parser
+def _parse_config_file(cfg_file: str):
+    config = ConfigParser()
+    config.read(cfg_file)
+    if SCHEMA in config:
+        return {
+            ORDER_ID: _get_column_name(config, SCHEMA, ORDER_ID),
+            YEAR: _get_column_name(config, SCHEMA, YEAR),
+            MONTH: _get_column_name(config, SCHEMA, MONTH),
+            DAY: _get_column_name(config, SCHEMA, DAY),
+            PRODUCT_ID: _get_column_name(config, SCHEMA, PRODUCT_ID),
+            PRODUCT_NAME: _get_column_name(config, SCHEMA, PRODUCT_NAME),
+            QUANTITY: _get_column_name(config, SCHEMA, QUANTITY),
+        }
+    else:
+        return CFG_DEFAULT
 
 # Class definition for Order object returned by API
 class Order:
@@ -56,20 +90,8 @@ class Order:
 # Main wrangle API function
 def wrangle(csv_file, cfg_file="") -> list:
 
-    # Config default values
-    cfg_params = {
-        ORDER_ID: "Order Number",
-        YEAR: "Year",
-        MONTH: "Month",
-        DAY: "Day",
-        PRODUCT_ID: "Product Number",
-        PRODUCT_NAME: "Product Name",
-        QUANTITY: "Count",
-    }
-
     # Process configuration file if provided
-    if cfg_file:
-        _parse_config_file(cfg_file, cfg_params)
+    cfg_params = _parse_config_file(cfg_file) if cfg_file else CFG_DEFAULT
 
     # Read the .csv file
     df = pd.read_csv(
@@ -134,33 +156,6 @@ def wrangle(csv_file, cfg_file="") -> list:
 
     # Return order list
     return order_list
-
-
-# Configuration file parser
-def _parse_config_file(cfg_file: str, cfg_params: dict):
-    config = ConfigParser()
-    config.read(cfg_file)
-    if SCHEMA in config:
-        if ORDER_ID in config[SCHEMA]:
-            cfg_params[ORDER_ID] = config[SCHEMA][ORDER_ID]
-
-        if YEAR in config[SCHEMA]:
-            cfg_params[YEAR] = config[SCHEMA][YEAR]
-
-        if MONTH in config[SCHEMA]:
-            cfg_params[MONTH] = config[SCHEMA][MONTH]
-
-        if DAY in config[SCHEMA]:
-            cfg_params[DAY] = config[SCHEMA][DAY]
-
-        if PRODUCT_ID in config[SCHEMA]:
-            cfg_params[PRODUCT_ID] = config[SCHEMA][PRODUCT_ID]
-
-        if PRODUCT_NAME in config[SCHEMA]:
-            cfg_params[PRODUCT_NAME] = config[SCHEMA][PRODUCT_NAME]
-
-        if QUANTITY in config[SCHEMA]:
-            cfg_params[QUANTITY] = config[SCHEMA][QUANTITY]
 
 
 # Helper functions to process CSV column values
