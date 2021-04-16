@@ -1,7 +1,7 @@
 import pandas as pd
 import logging
 import datetime
-from configparser import ConfigParser
+import json
 from decimal import Decimal
 
 # Config file parameters
@@ -15,6 +15,17 @@ QUANTITY = "quantity"
 
 # Other constants
 SCHEMA = "schema"
+
+# Config default values
+CFG_DEFAULT = {
+    ORDER_ID: "Order Number",
+    YEAR: "Year",
+    MONTH: "Month",
+    DAY: "Day",
+    PRODUCT_ID: "Product Number",
+    PRODUCT_NAME: "Product Name",
+    QUANTITY: "Count",
+}
 
 
 # Class definition for Order object returned by API
@@ -56,20 +67,11 @@ class Order:
 # Main wrangle API function
 def wrangle(csv_file, cfg_file="") -> list:
 
-    # Config default values
-    cfg_params = {
-        ORDER_ID: "Order Number",
-        YEAR: "Year",
-        MONTH: "Month",
-        DAY: "Day",
-        PRODUCT_ID: "Product Number",
-        PRODUCT_NAME: "Product Name",
-        QUANTITY: "Count",
-    }
-
     # Process configuration file if provided
     if cfg_file:
-        _parse_config_file(cfg_file, cfg_params)
+        cfg_params = _parse_config_file(cfg_file)
+    else:
+        cfg_params = CFG_DEFAULT
 
     # Read the .csv file
     df = pd.read_csv(
@@ -136,31 +138,29 @@ def wrangle(csv_file, cfg_file="") -> list:
     return order_list
 
 
-# Configuration file parser
-def _parse_config_file(cfg_file: str, cfg_params: dict):
-    config = ConfigParser()
-    config.read(cfg_file)
+# Get field value from JSON config
+def _get_column_name(config: dict, field: str) -> str:
+    return config[SCHEMA][field] if field in config[SCHEMA] else CFG_DEFAULT[field]
+
+
+# JSON Configuration file parser
+def _parse_config_file(cfg_file: str) -> dict:
+
+    with open(cfg_file) as f:
+        config = json.load(f)
+
     if SCHEMA in config:
-        if ORDER_ID in config[SCHEMA]:
-            cfg_params[ORDER_ID] = config[SCHEMA][ORDER_ID]
-
-        if YEAR in config[SCHEMA]:
-            cfg_params[YEAR] = config[SCHEMA][YEAR]
-
-        if MONTH in config[SCHEMA]:
-            cfg_params[MONTH] = config[SCHEMA][MONTH]
-
-        if DAY in config[SCHEMA]:
-            cfg_params[DAY] = config[SCHEMA][DAY]
-
-        if PRODUCT_ID in config[SCHEMA]:
-            cfg_params[PRODUCT_ID] = config[SCHEMA][PRODUCT_ID]
-
-        if PRODUCT_NAME in config[SCHEMA]:
-            cfg_params[PRODUCT_NAME] = config[SCHEMA][PRODUCT_NAME]
-
-        if QUANTITY in config[SCHEMA]:
-            cfg_params[QUANTITY] = config[SCHEMA][QUANTITY]
+        return {
+            ORDER_ID: _get_column_name(config, ORDER_ID),
+            YEAR: _get_column_name(config, YEAR),
+            MONTH: _get_column_name(config, MONTH),
+            DAY: _get_column_name(config, DAY),
+            PRODUCT_ID: _get_column_name(config, PRODUCT_ID),
+            PRODUCT_NAME: _get_column_name(config, PRODUCT_NAME),
+            QUANTITY: _get_column_name(config, QUANTITY),
+        }
+    else:
+        return CFG_DEFAULT
 
 
 # Helper functions to process CSV column values

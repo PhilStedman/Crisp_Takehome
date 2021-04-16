@@ -1,0 +1,11 @@
+{
+    "schema":{
+        "order_id": "Order ID",
+        "year": "YYYY",
+        "month": "MM",
+        "day": "DD",
+        "product_id": "ProductNo",
+        "product_name": "Product Name",
+        "quantity": "Qty"
+    }
+}

@@ -17,10 +17,10 @@ Pandas module
 Import the library as follows:
 `from philcsv import wrangler`
 
-Call the wrangle function with input .csv file and optional .ini configuration file:
+Call the wrangle function with input .csv file and optional .json configuration file:
 ```
 orders = wrangler.wrangle( "groceryOrders.csv" )
-orders = wrangler.wrangle( "groceryOrders.csv", "config.ini" )
+orders = wrangler.wrangle( "groceryOrders.csv", "config.json" )
 ```
 
 The function will return a list of Order class objects (as defined in wrangler.py). Take the following
@@ -45,16 +45,19 @@ When run, the above program outputs the following:
 ### Configuration file criteria
 The external configuration file allows a user to adjust the expected column names in the input CSV file. Take the following configuration file for example:
 
-**config.ini**
+**config.json**
 ```
-[schema]
-order_id = Order ID
-year = YYYY
-month = MM
-day = DD
-product_id = ProductNo
-product_name = Product Name
-quantity = Qty
+{
+    "schema":{
+        "order_id": "Order ID",
+        "year": "YYYY",
+        "month": "MM",
+        "day": "DD",
+        "product_id": "ProductNo",
+        "product_name": "Product Name",
+        "quantity": "Qty"
+    }
+}
 ```
 
 The above configuration specifies that the order_id can be found in the "Order ID" column, the year can be found in the "YYYY" column, etc... The contents of the configuration file are case-sensitive, if any one of the above keys cannot be found, then the program will default to a pre-defined value. The default values are listed below:
@@ -85,6 +88,8 @@ The goal here is to have a program that can read input CSV files provided by par
 
 ## Architectural decisions
 The input .csv file is being read using the pandas read_csv() function. This was chosen because we could easily improve upon the design by reading in large .csv files using the chunksize parameter. The current design does not handle very large .csv files (100,000+ rows) because we attempt to read the entire file in one go. For very large input .csv files, this will cause the system to crash due to 'Out Of Memory' errors. These issues can be resolved by reading in the .csv file in separate chunks.
+
+Furthermore, the configuration file is specified in JSON format as this allows us flexibility to expand the configuration file capabilities to support more complicated configurations in the future.
 
 Due to the ambiguity of what should be done with the output data, the API returns the data as a list of Order class objects. Most likely, the API would need to be extended to store the output data in a database.
 
