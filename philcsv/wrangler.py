@@ -67,34 +67,14 @@ class Order:
 # Main wrangle API function
 def wrangle(csv_file, cfg_file="") -> list:
 
-    # Process configuration file if provided
-    if cfg_file:
-        cfg_params = _parse_config_file(cfg_file)
-    else:
-        cfg_params = CFG_DEFAULT
+    cfg_params = _parse_config_file(cfg_file)
 
     # Read the .csv file
     df = pd.read_csv(
         csv_file,
         error_bad_lines=False,
-        usecols=[
-            cfg_params[ORDER_ID],
-            cfg_params[YEAR],
-            cfg_params[MONTH],
-            cfg_params[DAY],
-            cfg_params[PRODUCT_ID],
-            cfg_params[PRODUCT_NAME],
-            cfg_params[QUANTITY],
-        ],
-        dtype={
-            cfg_params[ORDER_ID]: str,
-            cfg_params[YEAR]: str,
-            cfg_params[MONTH]: str,
-            cfg_params[DAY]: str,
-            cfg_params[PRODUCT_ID]: str,
-            cfg_params[PRODUCT_NAME]: str,
-            cfg_params[QUANTITY]: str,
-        },
+        usecols=cfg_params.values(),
+        dtype={v: str for v in cfg_params.values()},
     )
 
     order_list = []
@@ -122,7 +102,7 @@ def wrangle(csv_file, cfg_file="") -> list:
             logging.warning(df.iloc[[i]])
             continue
 
-        # Convert to Order class object to list
+        # Add Order class object to list
         order_list.append(
             Order(
                 order_id,
@@ -138,29 +118,19 @@ def wrangle(csv_file, cfg_file="") -> list:
     return order_list
 
 
-# Get field value from JSON config
-def _get_column_name(config: dict, field: str) -> str:
-    return config[SCHEMA][field] if field in config[SCHEMA] else CFG_DEFAULT[field]
-
-
 # JSON Configuration file parser
 def _parse_config_file(cfg_file: str) -> dict:
 
-    with open(cfg_file) as f:
-        config = json.load(f)
+    result = CFG_DEFAULT.copy()
 
-    if SCHEMA in config:
-        return {
-            ORDER_ID: _get_column_name(config, ORDER_ID),
-            YEAR: _get_column_name(config, YEAR),
-            MONTH: _get_column_name(config, MONTH),
-            DAY: _get_column_name(config, DAY),
-            PRODUCT_ID: _get_column_name(config, PRODUCT_ID),
-            PRODUCT_NAME: _get_column_name(config, PRODUCT_NAME),
-            QUANTITY: _get_column_name(config, QUANTITY),
-        }
-    else:
-        return CFG_DEFAULT
+    if cfg_file:
+        with open(cfg_file) as f:
+            config = json.load(f)
+
+        if config[SCHEMA]:
+            result.update(config[SCHEMA])
+
+    return result
 
 
 # Helper functions to process CSV column values
