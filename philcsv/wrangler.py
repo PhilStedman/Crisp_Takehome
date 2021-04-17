@@ -58,9 +58,9 @@ class Parser:
 
     def next(self):
         for idx in range(len(self.data_frame)):
-            order = self.parse_line(idx)
-            if order:
-                yield order
+            result = self.parse_line(idx)
+            if result:
+                yield result
 
 
 class OrderParser(Parser):
@@ -68,7 +68,7 @@ class OrderParser(Parser):
         self.data_frame = data_frame
         self.cfg_params = cfg_params
 
-    def parse_line(self, idx):
+    def parse_line(self, idx: int) -> Order:
         errors = []
         # Process Order Number
         order_id = self._parse_order_id(idx, errors)
