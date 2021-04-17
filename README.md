@@ -87,13 +87,13 @@ Unit | String
 The goal here is to have a program that can read input CSV files provided by partners which could have varying headers. In order to accomodate varying input CSV files, we provide a config file which can be used to specify where to look for each column value of interest.
 
 ## Architectural decisions
-The input .csv file is being read using the pandas read_csv() function. This was chosen because we could easily improve upon the design by reading in large .csv files using the chunksize parameter. The current design does not handle very large .csv files (100,000+ rows) because we attempt to read the entire file in one go. For very large input .csv files, this will cause the system to crash due to 'Out Of Memory' errors. These issues can be resolved by reading in the .csv file in separate chunks.
+The input .csv file is being read using the pandas read_csv() function. This was chosen because it gives us the ability to read in the .csv file in separate chunks, this allows to be able to handle very large .csv files (100,000+ rows) which would otherwise cause us to hit an 'Out of Memory' error.
 
-Furthermore, the configuration file is specified in JSON format as this allows us flexibility to expand the configuration file capabilities to support more complicated configurations in the future.
+Furthermore, the configuration file is specified in JSON format as this provides us with the flexibility to expand the configuration file capabilities to support more complicated configurations in the future.
 
-Due to the ambiguity of what should be done with the output data, the API returns the data as a list of Order class objects. Most likely, the API would need to be extended to store the output data in a database.
+Due to the ambiguity of what should be done with the output data, the API returns the data as a list of Order class objects. Most likely, the API would need to be extended to store the output data in a database. (Note: that for very large input .csv files returning the result as an object list would also cause us to hit 'Out of Memory' conditions, but in production we would be storing the result in a database and not in memory.)
 
 ## Next steps
-- For large .csv files, split up the reading of the file into manageable chunks.
 - Determine where the output data should be stored and extend the API to store the output data in the database of your choosing.
 - Improve the capabilities of the configuration file to be less restrictive on the form of the input CSV file, e.g. a particular partner may be storing the date in a single column called "YYYY-MM-DD". The current design would not be able to handle this case.
+- Another useful config would be to allow changing the unit value from "kg" to something else (trivial to implement).

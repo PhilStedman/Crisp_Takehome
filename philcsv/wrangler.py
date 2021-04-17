@@ -3,6 +3,8 @@ import logging
 import datetime
 import json
 from decimal import Decimal
+from typing import List
+
 
 # Config file parameters
 ORDER_ID = "order_id"
@@ -13,19 +15,10 @@ PRODUCT_ID = "product_id"
 PRODUCT_NAME = "product_name"
 QUANTITY = "quantity"
 
-# Other constants
-SCHEMA = "schema"
 
-# Config default values
-CFG_DEFAULT = {
-    ORDER_ID: "Order Number",
-    YEAR: "Year",
-    MONTH: "Month",
-    DAY: "Day",
-    PRODUCT_ID: "Product Number",
-    PRODUCT_NAME: "Product Name",
-    QUANTITY: "Count",
-}
+# Using 10 rows as proof of concept (realistically, you would read in much larger chunks)
+CHUNK_SZ = 10
+SCHEMA = "schema"
 
 
 # Class definition for Order object returned by API
@@ -64,58 +57,128 @@ class Order:
                  {self.product_name} | {self.quantity} | {self.unit}"
 
 
+class OrderParser:
+    def __init__(self, data_frame, cfg_params: dict, chunk_num: int):
+        self.data_frame = data_frame
+        self.cfg_params = cfg_params
+        self.chunk_num = chunk_num
+
+    def parse_line(self, idx: int):
+        errors = []  # type: List[str]
+        idx += CHUNK_SZ * self.chunk_num
+
+        # Process row
+        order_id = self._parse_order_id(idx, errors)
+        order_date = self._parse_order_date(idx, errors)
+        quantity = self._parse_quantity(idx, errors)
+
+        if errors:
+            # Log invalid row
+            logging.warning(
+                "Error on line {line_num}: {errors}\n{dump}".format(
+                    line_num=idx, errors=",".join(errors), dump=self.data_frame
+                )
+            )
+            return None
+        else:
+            return Order(
+                order_id,
+                order_date,
+                self.data_frame[self.cfg_params[PRODUCT_ID]][idx],
+                self.data_frame[self.cfg_params[PRODUCT_NAME]][idx].title(),
+                quantity,
+                "kg",  # Note: we could make this dynamically configurable via config file
+            )
+
+    def next(self):
+        for idx in range(len(self.data_frame)):
+            result = self.parse_line(idx)
+            if result:
+                yield result
+
+    # Helper functions to process CSV column values
+    def _parse_order_id(self, idx: int, errors: list) -> int:
+        order_id = self.data_frame[self.cfg_params[ORDER_ID]][idx]
+        if order_id.isdigit():
+            return int(order_id)
+        else:
+            errors.append("OrderID must be a positive integer.")
+            return -1
+
+    def _parse_order_date(self, idx: int, errors: list):
+        year = self.data_frame[self.cfg_params[YEAR]][idx]
+        month = self.data_frame[self.cfg_params[MONTH]][idx]
+        day = self.data_frame[self.cfg_params[DAY]][idx]
+
+        valid = True
+        if year.isdigit() is False or int(year) < 1:
+            errors.append("Year value is not valid")
+            valid = False
+
+        if month.isdigit() is False or int(month) < 1 or int(month) > 12:
+            errors.append("Month value is not valid")
+            valid = False
+
+        if day.isdigit() is False or int(day) < 1 or int(day) > 31:
+            errors.append("Day value is not valid")
+            valid = False
+
+        return datetime.datetime(int(year), int(month), int(day)) if valid else None
+
+    def _parse_quantity(self, idx: int, errors: list):
+        qty = self.data_frame[self.cfg_params[QUANTITY]][idx]
+        qty = qty.replace(",", "")
+
+        try:
+            float(qty)
+        except ValueError:
+            errors.append("Quantity is non-numeric.")
+            return -1
+
+        quantity = Decimal(qty)
+
+        if quantity < 0:
+            errors.append("Quantity has a negative value.")
+            return -1
+
+        return quantity
+
+
 # Main wrangle API function
 def wrangle(csv_file, cfg_file="") -> list:
 
     cfg_params = _parse_config_file(cfg_file)
 
+    order_list = []
+    chunk_num = 0
+
     # Read the .csv file
-    df = pd.read_csv(
+    for df in pd.read_csv(
         csv_file,
+        chunksize=CHUNK_SZ,
         error_bad_lines=False,
         usecols=cfg_params.values(),
         dtype={v: str for v in cfg_params.values()},
-    )
+    ):
+        parser = OrderParser(df, cfg_params, chunk_num)
+        for order in parser.next():
+            order_list.append(order)
 
-    order_list = []
+        chunk_num += 1
 
-    # Loop through rows
-    for i in range(len(df)):
-        # Process Order Number
-        order_id = _process_order_number(df[cfg_params[ORDER_ID]][i])
-        if order_id == -1:
-            # Log invalid row
-            logging.warning(df.iloc[[i]])
-            continue
-
-        # Process Year, Month, Day
-        order_date = _process_order_date(df[cfg_params[YEAR]][i], df[cfg_params[MONTH]][i], df[cfg_params[DAY]][i])
-        if order_date == -1:
-            # Log invalid row
-            logging.warning(df.iloc[[i]])
-            continue
-
-        # Process Count
-        quantity = _process_count(df[cfg_params[QUANTITY]][i])
-        if quantity == -1:
-            # Log invalid row
-            logging.warning(df.iloc[[i]])
-            continue
-
-        # Add Order class object to list
-        order_list.append(
-            Order(
-                order_id,
-                order_date,
-                df[cfg_params[PRODUCT_ID]][i],
-                df[cfg_params[PRODUCT_NAME]][i].title(),
-                quantity,
-                "kg",
-            )
-        )
-
-    # Return order list
     return order_list
+
+
+# Config default values
+CFG_DEFAULT = {
+    ORDER_ID: "Order Number",
+    YEAR: "Year",
+    MONTH: "Month",
+    DAY: "Day",
+    PRODUCT_ID: "Product Number",
+    PRODUCT_NAME: "Product Name",
+    QUANTITY: "Count",
+}
 
 
 # JSON Configuration file parser
@@ -131,47 +194,3 @@ def _parse_config_file(cfg_file: str) -> dict:
             result.update(config[SCHEMA])
 
     return result
-
-
-# Helper functions to process CSV column values
-def _process_order_number(order_no: str) -> int:
-    if order_no.isdigit():
-        return int(order_no)
-    else:
-        logging.warning("Invalid row entry: 'OrderID' must be a positive integer.")
-        return -1
-
-
-def _process_order_date(year: str, month: str, day: str):
-    if year.isdigit() is False or int(year) < 1:
-        logging.warning("Invalid row entry: 'Year' value is not valid")
-        return -1
-
-    if month.isdigit() is False or int(month) < 1 or int(month) > 12:
-        logging.warning("Invalid row entry: 'Month' value is not valid")
-        return -1
-
-    if day.isdigit() is False or int(day) < 1 or int(day) > 31:
-        logging.warning("Invalid row entry: 'Day' value is not valid")
-        return -1
-
-    order_date = datetime.datetime(int(year), int(month), int(day))
-    return order_date
-
-
-def _process_count(qty: str):
-    qty = qty.replace(",", "")
-
-    try:
-        float(qty)
-    except ValueError:
-        logging.warning("Invalid row entry: 'Quantity' is non-numeric.")
-        return -1
-
-    quantity = Decimal(qty)
-
-    if quantity < 0:
-        logging.warning("Invalid row entry: 'Quantity' has a negative value.")
-        return -1
-
-    return quantity
