@@ -53,8 +53,10 @@ class Order:
         )
 
     def __repr__(self):
-        return f"{self.order_id} | {self.order_date} | {self.product_id} | \
-                 {self.product_name} | {self.quantity} | {self.unit}"
+        return (
+            f"{self.order_id} | {self.order_date} | {self.product_id} | "
+            f"{self.product_name} | {self.quantity} | {self.unit}"
+        )
 
 
 class OrderParser:
