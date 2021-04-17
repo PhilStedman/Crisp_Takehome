@@ -78,7 +78,7 @@ class OrderParser:
             # Log invalid row
             logging.warning(
                 "Error on line {line_num}: {errors}\n{dump}".format(
-                    line_num=idx, errors=",".join(errors), dump=self.data_frame
+                    line_num=idx, errors=", ".join(errors), dump=self.data_frame.loc[[idx]]
                 )
             )
             return None
@@ -104,7 +104,7 @@ class OrderParser:
         if order_id.isdigit():
             return int(order_id)
         else:
-            errors.append("OrderID must be a positive integer.")
+            errors.append(self.cfg_params[ORDER_ID] + " must be a positive integer")
             return -1
 
     def _parse_order_date(self, idx: int, errors: list):
@@ -114,15 +114,15 @@ class OrderParser:
 
         valid = True
         if year.isdigit() is False or int(year) < 1:
-            errors.append("Year value is not valid")
+            errors.append(self.cfg_params[YEAR] + " value is not valid")
             valid = False
 
         if month.isdigit() is False or int(month) < 1 or int(month) > 12:
-            errors.append("Month value is not valid")
+            errors.append(self.cfg_params[MONTH] + " value is not valid")
             valid = False
 
         if day.isdigit() is False or int(day) < 1 or int(day) > 31:
-            errors.append("Day value is not valid")
+            errors.append(self.cfg_params[DAY] + " value is not valid")
             valid = False
 
         return datetime.datetime(int(year), int(month), int(day)) if valid else None
@@ -134,13 +134,13 @@ class OrderParser:
         try:
             float(qty)
         except ValueError:
-            errors.append("Quantity is non-numeric.")
+            errors.append(self.cfg_params[QUANTITY] + " is non-numeric")
             return -1
 
         quantity = Decimal(qty)
 
         if quantity < 0:
-            errors.append("Quantity has a negative value.")
+            errors.append(self.cfg_params[QUANTITY] + " has a negative value")
             return -1
 
         return quantity
